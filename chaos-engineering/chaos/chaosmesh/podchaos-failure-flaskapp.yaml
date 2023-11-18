@@ -1,0 +1,14 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: podchaos-failure-flaskapp
+  namespace: chaos-experiments
+spec:
+  action: pod-failure
+  mode: all
+  duration: '30s'
+  selector:
+    namespaces:
+      - 'flaskapp'
+    labelSelectors:
+      'app': 'flaskapp'
