@@ -1,0 +1,3 @@
+# Dateien und Ordner die nicht zum image bauen kopiert werden sollen
+__pycache__
+Dockerfile
