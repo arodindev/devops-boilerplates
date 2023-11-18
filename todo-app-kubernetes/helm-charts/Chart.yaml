@@ -1,0 +1,8 @@
+apiVersion: v2
+name: taskapp
+description: A simple web based task application for K8s test purposes.
+type: application
+version: v0.0.12 # chart version
+appVersion: v0.0.12 # app version
+sources:
+  - https://github.com/dstoecklein/taskapp

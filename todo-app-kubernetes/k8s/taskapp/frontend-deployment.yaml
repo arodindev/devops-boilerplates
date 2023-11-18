@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskapp-frontend
+  namespace: taskapp
+  labels:
+    app: taskapp-frontend
+    release: primary
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: taskapp-frontend
+      release: primary
+  template:
+    metadata:
+      labels:
+        app: taskapp-frontend
+        release: primary
+    spec:
+      containers:
+        - name: taskapp-frontend
+          image: ghcr.io/dstoecklein/taskapp-frontend:v0.0.12
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      #imagePullSecrets:
+      #        - name: ghcr
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: taskapp-frontend
+  namespace: taskapp
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taskapp-frontend
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
