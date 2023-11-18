@@ -1,0 +1,53 @@
+namespace: taskapp
+taskapp:
+  release: primary
+  image:
+    repository: ghcr.io/dstoecklein/
+    version: "" # use appVersion from Chart spec
+    pullPolicy: IfNotPresent
+    healthEndpoint: /
+    initialDelaySeconds: 5
+  hpa:
+    minReplicas: 1
+    maxReplicas: 1
+  service:
+    port: 80
+    targetPortBackend: 8000
+    targetPortFrontend: 3000
+  ingress:
+    host: taskapp.acme.com
+
+mongo:
+  name: mongo
+  release: primary
+  image:
+    repository: mongo
+    tag: latest 
+    pullPolicy: IfNotPresent
+  persistentVolume:
+    accessMode: ReadWriteOnce
+  service:
+    port: 27017
+    targetPort: 27017
+
+prometheus:
+  name: prometheus
+  image:
+    repository: prom/prometheus
+    tag: latest 
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 9090
+    targetPort: 9090
+
+grafana:
+  name: grafana
+  image:
+    repository: grafana/grafana
+    tag: latest 
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 3000
+    targetPort: 3000

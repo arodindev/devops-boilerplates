@@ -1,0 +1,7 @@
+# Dateien und Ordner die nicht zum image bauen kopiert werden sollen
+Dockerfile
+.dockerignore
+.gitignore
+README.md
+node_modules
+# package-lock.json
