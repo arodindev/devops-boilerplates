@@ -1,0 +1,113 @@
+- hosts: all
+  gather_facts: False
+  user: ubuntu # change if required
+  become: yes
+  become_user: root
+  tasks:
+    - name: Wait for ssh
+      wait_for_connection:
+    - name: Wait for cloud-init to finish
+      raw: while [ ! -f /var/lib/cloud/instance/boot-finished]; do sleep 10s; done
+      retries: 10
+      delay: 1
+      # Install required packages
+    - name: Install required system packages
+      apt:
+        name:
+          [
+            "curl",
+            "git",
+            "apt-transport-https",
+            "ca-certificates",
+            "software-properties-common",
+            "python3",
+            "python3-pip",
+            "virtualenv",
+          ]
+        state: latest
+        update_cache: yes
+      # Install Docker
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+      # Install Kubernetes
+    - name: Add google GPG apt Key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+    - name: Add Kubernetes Repository
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+      # Install kubectl
+    - name: Update apt and install kubectl
+      apt:
+        name: kubectl
+        state: latest
+        update_cache: true
+      # Install Minikube
+    - name: Download and install Minikube
+      shell: curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube
+      args:
+        creates: /usr/local/bin/minikube
+      register: minikube_download_result
+      changed_when: minikube_download_result.stdout != "OK"
+      # Set env variable for static Minikube IP
+    - name: Set MINIKUBE_IP variable
+      set_fact:
+        MINIKUBE_IP: 192.168.49.2
+      # Add entries to hosts file
+    - name: Add entry to /etc/hosts if not present
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ MINIKUBE_IP }} taskapp.acme.com"
+        state: present
+    - name: Add entry to /etc/hosts if not present
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ MINIKUBE_IP }} api.taskapp.acme.com"
+        state: present
+      # Start Minikube
+    - name: Start Minikube
+      command: minikube start --driver=docker --static-ip={{ MINIKUBE_IP }} --force
+      ignore_errors: yes # Ignoring errors in case Minikube is already running
+    - name: Enable Ingress addon
+      command: minikube addons enable ingress
+      when: "'ingress' not in ansible_facts['minikube']['enabled_addons'] | default([])"
+    - name: Set local docker environment for minikube
+      shell: |
+        eval $(minikube docker-env)
+      # Deploy Taskapp application on Minikube
+    - name: Install pip packages to check Pod status
+      pip: # need this to check pod status
+        name:
+          - openshift
+          - pyyaml
+          - kubernetes
+    - name: Copy k8s manifests
+      copy:
+        src: ../../k8s/
+        dest: ~/k8s/
+    - name: Deploy application
+      shell: |
+        kubectl apply -k ~/k8s/
+    - name: Wait for Pods to become 'Running'
+      k8s_info:
+        namespace: taskapp
+        kind: Pod
+        label_selectors:
+          - app=taskapp-frontend
+      register: pod_list
+      until: pod_list.resources[0].status.phase == 'Running'
+      delay: 60
+      retries: 10

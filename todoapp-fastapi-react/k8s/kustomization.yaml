@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: taskapp
+resources:
+  - taskapp/namespace.yaml
+  - taskapp/backend-deployment.yaml
+  - taskapp/frontend-deployment.yaml
+  - taskapp/mongodb-deployment.yaml
+  - taskapp/ingress.yaml
+  - monitoring/prometheus-deployment.yaml
+  - monitoring/grafana-deployment.yaml
