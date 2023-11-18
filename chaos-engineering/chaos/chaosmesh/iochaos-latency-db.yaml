@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: IOChaos
+metadata:
+  name: iochaos-latency-db
+  namespace: chaos-experiments
+spec:
+  action: latency
+  mode: one
+  selector:
+    namespaces:
+      - 'flaskapp'
+    labelSelectors:
+      'app': 'db'
+  volumePath: /data/db
+  #path: /var/run/etcd/**/*
+  delay: '4000ms'
+  percent: 100
+  duration: '400s'

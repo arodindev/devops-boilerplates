@@ -1,0 +1,19 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: HTTPChaos
+metadata:
+  name: httpchaos-abort-flaskapp
+  namespace: chaos-experiments
+spec:
+  mode: all
+  selector:
+    namespaces:
+      - 'flaskapp'
+    labelSelectors:
+      'app': 'flaskapp'
+  target: Request
+  port: 80
+  path: '/'
+  abort: true
+  duration: 5m
+  #request_headers:
+  #  Host: 'flaskapp.acme.com'

@@ -1,0 +1,18 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: IOChaos
+metadata:
+  name: iochaos-fault-db
+  namespace: chaos-experiments
+spec:
+  action: fault
+  mode: one
+  selector:
+    namespaces:
+      - 'flaskapp'
+    labelSelectors:
+      'app': 'db'
+  volumePath: /data/db
+  #path: /var/run/etcd/**/*
+  errno: 5
+  percent: 10
+  duration: '400s'

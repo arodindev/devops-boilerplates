@@ -1,0 +1,240 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaostoolkit-experiments
+data:
+  health-http.yaml: |
+    version: 1.0.0
+    title: What happens if we terminate an instance of the application 1?
+    description: If an instance of the application is terminated, the applications as a whole should still be operational.
+    tags:
+    - k8s
+    - pod
+    - http
+    steady-state-hypothesis:
+      title: The app is healthy
+      probes:
+      - name: app-responds-to-requests
+        type: probe
+        tolerance: 200
+        provider:
+          type: http
+          timeout: 3
+          verify_tls: false
+          url: http://${ingress_host}/tasks
+          headers:
+            Host: flaskapp.acme.com
+    method:
+    - type: action
+      name: terminate-app-pod
+      provider:
+        type: python
+        module: chaosk8s.pod.actions
+        func: terminate_pods
+        arguments:
+          label_selector: app=flaskapp
+          rand: true
+          ns: flaskapp
+      pauses: 
+        after: 2
+  health-db.yaml: |
+    version: 1.0.0
+    title: What happens if we terminate an instance of the DB?
+    description: If an instance of the DB is terminated, dependant applications should still be operational.
+    tags:
+    - k8s
+    - pod
+    - http
+    steady-state-hypothesis:
+      title: The app is healthy
+      probes:
+      - name: app-responds-to-requests
+        type: probe
+        tolerance: 200
+        provider:
+          type: http
+          timeout: 3
+          verify_tls: false
+          url: http://${ingress_host}/tasks
+          headers:
+            Host: flaskapp.acme.com
+    method:
+    - type: action
+      name: terminate-db-pod
+      provider:
+        type: python
+        module: chaosk8s.pod.actions
+        func: terminate_pods
+        arguments:
+          label_selector: app=db
+          rand: true
+          ns: flaskapp
+      pauses: 
+        after: 10
+  health-random.yaml: |
+    version: 1.0.0
+    title: What happens if we terminate an instance of the application?
+    description: If an instance of the application is terminated, a new instance should be created
+    tags:
+    - k8s
+    - pod
+    - deployment
+    steady-state-hypothesis:
+      title: The app is healthy
+      probes:
+      - name: all-apps-are-healthy
+        type: probe
+        tolerance: true
+        provider:
+          type: python
+          func: all_pods_healthy
+          module: chaosk8s.probes
+          arguments:
+            ns: flaskapp
+    method:
+    - type: action
+      name: terminate-app-pod
+      provider:
+        type: python
+        module: chaosk8s.pod.actions
+        func: terminate_pods
+        arguments:
+          rand: true
+          ns: flaskapp
+      pauses: 
+        after: 10
+  network.yaml: |
+    version: 1.0.0
+    title: What happens if we abort responses
+    description: If responses are aborted, the dependant application should retry and/or timeout requests
+    tags:
+    - k8s
+    - istio
+    - http
+    steady-state-hypothesis:
+      title: The app is healthy
+      probes:
+      - type: probe
+        name: app-responds-to-requests
+        tolerance: 200
+        provider:
+          type: http
+          timeout: 10
+          verify_tls: false
+          url: http://${ingress_host}?addr=http://flaskapp/tasks
+          headers:
+            Host: repeater.acme.com
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+    method:
+    - type: action
+      name: abort-failure
+      provider:
+        type: python
+        module: chaosistio.fault.actions
+        func: add_abort_fault
+        arguments:
+          virtual_service_name: flaskapp
+          http_status: 500
+          routes:
+            - destination:
+                host: flaskapp
+                subset: primary
+          percentage: 50
+          version: networking.istio.io/v1alpha3
+          ns: flaskapp
+      pauses: 
+        after: 1
+    rollbacks:
+    - type: action
+      name: remove-abort-failure
+      provider:
+        type: python
+        func: remove_abort_fault
+        module: chaosistio.fault.actions
+        arguments:
+          virtual_service_name: flaskapp
+          routes:
+            - destination:
+                host: flaskapp
+                subset: primary
+          version: networking.istio.io/v1alpha3
+          ns: flaskapp
+  network-delay.yaml: |
+    version: 1.0.0
+    title: What happens if we abort and delay responses
+    description: If responses are aborted and delayed, the dependant application should retry and/or timeout requests
+    tags:
+    - k8s
+    - k8s
+    - istio
+    - http
+    steady-state-hypothesis:
+      title: The app is healthy
+      probes:
+      - type: probe
+        name: app-responds-to-requests
+        tolerance: 200
+        provider:
+          type: http
+          timeout: 10
+          verify_tls: false
+          url: http://${ingress_host}?addr=http://flaskapp/tasks
+          headers:
+            Host: repeater.acme.com
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+      - type: probe
+        tolerance: 200
+        ref: app-responds-to-requests
+    method:
+    - type: action
+      name: delay
+      provider:
+        type: python
+        module: chaosistio.fault.actions
+        func: add_delay_fault
+        arguments:
+          virtual_service_name: flaskapp
+          fixed_delay: 15s
+          routes:
+            - destination:
+                host: flaskapp
+                subset: primary
+          percentage: 50
+          version: networking.istio.io/v1alpha3
+          ns: flaskapp
+      pauses: 
+        after: 1
+    rollbacks:
+    - type: action
+      name: remove-delay
+      provider:
+        type: python
+        func: remove_delay_fault
+        module: chaosistio.fault.actions
+        arguments:
+          virtual_service_name: flaskapp
+          routes:
+            - destination:
+                host: flaskapp
+                subset: primary
+          version: networking.istio.io/v1alpha3
+          ns: flaskapp
