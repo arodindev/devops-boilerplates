@@ -1,4 +1,4 @@
 fastapi ==0.104.1
-uvicorn == 0.23.2
+uvicorn ==0.30.5
 motor ==3.3.1
 prometheus-fastapi-instrumentator ==6.1.0
