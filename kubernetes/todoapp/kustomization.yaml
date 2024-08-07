@@ -6,3 +6,5 @@ resources:
   - app/deployment.yaml
   - app/istio.yaml
   - mongodb/deployment.yaml
+  - monitoring/grafana-deployment.yaml
+  - monitoring/prometheus-deployment.yaml
