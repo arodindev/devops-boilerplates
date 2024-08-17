@@ -5,4 +5,7 @@
   ],
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "commitMessagePrefix": "🤖",
+  "kubernetes": {
+    "fileMatch": ["\\.yaml$"]
+  }
 }
