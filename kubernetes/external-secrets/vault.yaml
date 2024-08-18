@@ -1,0 +1,14 @@
+kind: ClusterSecretStore
+metadata:
+  name: vault-backend
+spec:
+  provider:
+    vault:
+      server: "http://192.168.71.128:8200" # EDIT (localIP:vaultPort)
+      path: "secret"
+      version: "v2"
+      auth:
+        tokenSecretRef:
+          namespace: external-secrets
+          name: keys
+          key: token # token for vault itself
