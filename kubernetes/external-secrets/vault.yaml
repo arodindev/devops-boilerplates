@@ -1,0 +1,16 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: vault-backend
+  namespace: external-secrets
+spec:
+  provider:
+    vault:
+      server: "http://192.168.49.1:8200" # EDIT (localIP:vaultPort)
+      path: "secret"
+      version: "v2"
+      auth:
+        tokenSecretRef: # This is the initial vault token stored in a k8s secret
+          namespace: external-secrets
+          name: vault-root-token
+          key: token 
