@@ -2,10 +2,10 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: todoapp
+  namespace: todoapp
 spec:
   hosts:
-  - todoapp.acme.com
-  - todoapp
+  - todoapp.arodindev.com
   gateways:
   - todoapp
   http:
@@ -22,6 +22,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: todoapp
+  namespace: todoapp
 spec:
   host: todoapp
   subsets:
@@ -35,6 +36,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: todoapp
+  namespace: todoapp
 spec:
   selector:
     istio: ingressgateway
@@ -44,4 +46,4 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - todoapp.acme.com
+    - todoapp.arodindev.com
