@@ -1,0 +1,29 @@
+- name: Create self-signed certificate for test usage
+  hosts: default
+  become: true # become root
+  tasks:
+    - name: Ensure SSL related directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "/etc/ssl/crt"
+        - "/etc/ssl/csr"
+        - "/etc/ssl/private"
+
+    - name: Generate an OpenSSL private key.
+      openssl_privatekey:
+        path: /etc/ssl/private/privkey.pem
+
+    - name: generate openssl certificate signing requests
+      openssl_csr:
+        path: /etc/ssl/csr/todoapp.arodindev.com.csr
+        privatekey_path: /etc/ssl/private/privkey.pem
+        common_name: todoapp.arodindev.com
+
+    - name: Generate a Self Signed OpenSSL certificate
+      openssl_certificate:
+        path: /etc/ssl/crt/todoapp.arodindev.com.crt
+        privatekey_path: /etc/ssl/private/privkey.pem
+        csr_path: /etc/ssl/csr/todoapp.arodindev.com.csr
+        provider: selfsigned
