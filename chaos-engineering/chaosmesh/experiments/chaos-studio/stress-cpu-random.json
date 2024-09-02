@@ -1,0 +1,16 @@
+{
+    "spec": {
+        "mode": "all",
+        "selector": {
+            "namespaces": [
+                "todoapp"
+            ]
+        },
+        "stressors": {
+            "cpu": {
+                "workers": 4,
+                "load": 100
+            }
+        }
+    }
+}

@@ -1,17 +1,13 @@
 # Chaos Mesh
 
-Run chaos experiments against the sample [todoapp](https://github.com/arodindev/todoapp)
-
 ## Getting Started
-
-Spin up a minikube cluster as described [here](https://github.com/arodindev/devops-boilerplates/tree/main/kubernetes)
 
 Install Chaos Mesh
 
 ```bash
 helm repo add chaos-mesh https://charts.chaos-mesh.org
 helm repo update
-helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-testing --create-namespace
+helm install chaos-mesh chaos-mesh/chaos-mesh -n=chaos-testing --create-namespace --set dashboard.securityMode=false
 ```
 
 Create chaos-testing namespace

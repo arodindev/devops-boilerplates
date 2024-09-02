@@ -1,0 +1,15 @@
+{
+    "action": "container-kill",
+    "mode": "all",
+    "containerNames": [
+        "istio-proxy"
+    ],
+    "selector": {
+        "namespaces": [
+            "todoapp"
+        ],
+        "labelSelectors": {
+            "app": "db"
+        }
+    }
+}

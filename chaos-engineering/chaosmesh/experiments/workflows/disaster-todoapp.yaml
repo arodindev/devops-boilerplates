@@ -1,0 +1,79 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  name: disaster-todoapp
+  namespace: chaos-experiments
+spec:
+  entry: entry
+  templates:
+    - name: entry
+      templateType: Serial
+      deadline: 50m
+      children:
+        - pod-disaster-flow
+    - name: pod-disaster-flow
+      templateType: Serial
+      children:
+        - crashloop-todoapp
+        - podkill-todoapp
+        - parallel-stress-on-todoapp
+    - name: crashloop-todoapp
+      templateType: PodChaos
+      deadline: 15m
+      podChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        action: pod-failure
+    - name: podkill-todoapp
+      templateType: PodChaos
+      deadline: 10m
+      podChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        action: pod-kill
+        gracePeriod: 5
+    - name: parallel-stress-on-todoapp
+      templateType: Parallel
+      children:
+        - stresschaos-cpu-todoapp
+        - networkchaos-packets-corruption-todoapp
+    - name: stresschaos-cpu-todoapp
+      templateType: StressChaos
+      deadline: 6m
+      stressChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        stressors:
+          memory:
+            workers: 2
+            size: 512MB
+          cpu:
+            workers: 2
+            load: 65
+    - name: networkchaos-packets-corruption-todoapp
+      templateType: NetworkChaos
+      deadline: 6m
+      networkChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        action: corrupt
+        corrupt:
+          corrupt: '50'
+          correlation: '50'
+        direction: to

@@ -1,0 +1,81 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  name: network-nightmare-todoapp
+  namespace: chaos-experiments
+spec:
+  entry: entry
+  templates:
+    - name: entry
+      templateType: Serial
+      children:
+        - network-nightmare-flow
+      deadline: 50m
+    - name: network-nightmare-flow
+      templateType: Parallel
+      children:
+        - delay
+        - packet-loss
+        - packet-duplication
+        - packet-corruption
+    - name: delay
+      templateType: NetworkChaos
+      deadline: 10m
+      networkChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        action: delay
+        delay:
+          latency: 150ms
+          jitter: 350ms
+          correlation: '50'
+        direction: to
+    - name: packet-loss
+      templateType: NetworkChaos
+      deadline: 10m
+      networkChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        action: loss
+        loss:
+          loss: '30'
+          correlation: '50'
+        direction: to
+    - name: packet-duplication
+      templateType: NetworkChaos
+      deadline: 10m
+      networkChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        action: duplicate
+        duplicate:
+          duplicate: '15'
+          correlation: '30'
+        direction: to
+    - name: packet-corruption
+      templateType: NetworkChaos
+      deadline: 10m
+      networkChaos:
+        selector:
+          namespaces:
+            - todoapp
+          labelSelectors:
+            app: todoapp
+        mode: all
+        action: corrupt
+        corrupt:
+          corrupt: '13'
+          correlation: '25'
+        direction: to

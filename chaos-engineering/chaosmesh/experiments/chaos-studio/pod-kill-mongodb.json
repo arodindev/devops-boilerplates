@@ -1,0 +1,12 @@
+{
+    "action": "pod-kill",
+    "mode": "one",
+    "selector": {
+        "namespaces": [
+            "todoapp"
+        ],
+        "labelSelectors": {
+            "app": "db"
+        }
+    }
+}

@@ -1,0 +1,17 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Schedule
+metadata:
+  name: pod-kill-random
+  namespace: chaos-experiments
+spec:
+  schedule: '*/2 * * * *'
+  historyLimit: 2
+  concurrencyPolicy: 'Forbid'
+  type: 'PodChaos'
+  podChaos:
+    action: pod-kill
+    mode: one
+    selector:
+      namespaces:
+        - todoapp
+
