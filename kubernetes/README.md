@@ -29,7 +29,7 @@ ansible-playbook -c local -i inventory.ini playbook.yaml -K
 Create secret
 
 ```bash
-sudo -E env "PATH=$PATH" kubectl -n todoapp create secret tls tls-secret --cert=/etc/ssl/crt/todoapp.arodindev.com.crt --key=/etc/ssl/private/privkey.pem
+sudo -E env "PATH=$PATH" kubectl -n istio-system create secret tls tls-secret --cert=/etc/ssl/crt/todoapp.arodindev.com.crt --key=/etc/ssl/private/privkey.pem
 ```
 
 Establish Minikube tunnel
