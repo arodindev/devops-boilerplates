@@ -1,14 +1,13 @@
 apiVersion: chaos-mesh.org/v1alpha1
 kind: PodChaos
 metadata:
-  name: podchaos-failure-flaskapp
+  name: pod-kill-todoapp
   namespace: chaos-experiments
 spec:
-  action: pod-failure
-  mode: all
-  duration: '30s'
+  action: pod-kill
+  mode: one
   selector:
     namespaces:
-      - 'flaskapp'
+    - todoapp
     labelSelectors:
-      'app': 'flaskapp'
+      'app': 'todoapp'

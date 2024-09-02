@@ -1,0 +1,14 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: container-kill-mongodb
+  namespace: chaos-experiments
+spec:
+  action: container-kill
+  mode: all
+  containerNames: ['mongo']
+  selector:
+    namespaces:
+      - todoapp
+    labelSelectors:
+      'app': 'db'
