@@ -1,0 +1,58 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  hosts:
+  - {{ .Values.istio.host }}
+  gateways:
+  - {{ .Release.Name }}
+  http:
+  - route:
+    - destination:
+        host: {{ .Release.Name }}
+        subset: primary
+        port:
+          number: 80
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  host: {{ .Release.Name }}
+  subsets:
+  - name: primary
+    labels:
+      release: primary
+
+---
+
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  #- port:
+  #    number: 80
+  #    name: http
+  #    protocol: HTTP
+  #  hosts:
+  #  - {{ .Values.istio.host }}
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - {{ .Values.istio.host }}
+    tls:
+      mode: SIMPLE
+      credentialName: tls-secret

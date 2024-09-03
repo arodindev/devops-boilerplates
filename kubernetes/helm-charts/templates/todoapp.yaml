@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    release: {{ .Values.todoapp.release }}
+  annotations:
+    sidecar.istio.io/inject: "true"
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      release: {{ .Values.todoapp.release }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        release: {{ .Values.todoapp.release }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8000"
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.todoapp.image.repository }}:{{ default .Chart.AppVersion .Values.todoapp.image.version }}"
+          ports:
+            - containerPort: {{ .Values.todoapp.service.targetPort }}
+          imagePullPolicy: {{ .Values.todoapp.image.pullPolicy }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.todoapp.readinessProbe.healthEndpoint }}
+              port: {{ .Values.todoapp.service.targetPort }}
+            initialDelaySeconds: {{ .Values.todoapp.readinessProbe.initialDelaySeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.todoapp.readinessProbe.healthEndpoint }}
+              port: {{ .Values.todoapp.service.targetPort }}
+            initialDelaySeconds: {{ .Values.todoapp.readinessProbe.initialDelaySeconds }}
+          resources:
+            limits:
+              memory: 250Mi
+              cpu: 100m
+            requests:
+              memory: 50Mi
+              cpu: 50m
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.todoapp.service.port }}
+      targetPort: {{ .Values.todoapp.service.targetPort }}
+  selector:
+    app: {{ .Release.Name }}
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}
+  minReplicas: {{ .Values.todoapp.hpa.minReplicas }}
+  maxReplicas: {{ .Values.todoapp.hpa.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80

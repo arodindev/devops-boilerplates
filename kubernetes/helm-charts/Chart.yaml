@@ -1,0 +1,8 @@
+apiVersion: v2
+name: todoapp
+description: Powerful FastAPI backend boilerplate for real production.
+type: application
+version: v0.0.2 # chart version
+appVersion: v0.0.2 # app version
+sources:
+  - https://github.com/arodindev/todoapp
