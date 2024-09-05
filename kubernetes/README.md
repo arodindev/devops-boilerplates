@@ -13,7 +13,14 @@ minikube start --cpus 4 --memory 8192 --driver=docker --container-runtime=docker
 istioctl install
 ```
 
-Deploy apps
+#### Deploy app via Helm
+
+```bash
+cd helm-charts
+helm install todoapp .
+```
+
+#### (optional) Deploy app via kubectl
 
 ```bash
 kubectl apply -k ./todoapp
@@ -31,6 +38,8 @@ Create secret
 ```bash
 sudo -E env "PATH=$PATH" kubectl -n istio-system create secret tls tls-secret --cert=/etc/ssl/crt/todoapp.arodindev.com.crt --key=/etc/ssl/private/privkey.pem
 ```
+
+#### Test app
 
 Establish Minikube tunnel
 

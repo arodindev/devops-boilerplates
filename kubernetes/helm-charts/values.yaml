@@ -1,5 +1,7 @@
 namespace: todoapp
 
+nameOverride: ""
+
 todoapp:
   release: primary
   image:
