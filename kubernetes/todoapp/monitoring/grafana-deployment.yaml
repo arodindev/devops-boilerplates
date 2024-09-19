@@ -494,7 +494,7 @@ spec:
       serviceAccountName: prometheus
       containers:
         - name: prometheus-server-configmap-reload
-          image: "ghcr.io/prometheus-operator/prometheus-config-reloader:v0.76.2"
+          image: "ghcr.io/prometheus-operator/prometheus-config-reloader:v0.77.0"
           imagePullPolicy: "IfNotPresent"
           args:
             - --watched-dir=/etc/config
