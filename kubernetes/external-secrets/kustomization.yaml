@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: external-secrets
 helmCharts:
   - name: external-secrets
-    version: 0.12.1
+    version: 0.18.2
     namespace: external-secrets
     repo: https://charts.external-secrets.io
     valuesInline:
